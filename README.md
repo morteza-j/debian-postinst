@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # debian-postinst
 Here is a simple script to initialize your minimal Debian installation!
 =======
@@ -85,4 +84,3 @@ Issues, feature requests, and pull requests are welcome.
 ## License
 
 GNU GENERAL PUBLIC LICENSE Version 3
->>>>>>> d43a97b (Initial commit)
