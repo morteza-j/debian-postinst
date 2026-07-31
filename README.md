@@ -57,14 +57,14 @@ debian-postinst/
 Clone the repository:
 
 ```bash
-git clone https://github.com/<your-username>/debian-postinst.git
+git clone https://github.com/morteza-j/debian-postinst.git
 cd debian-postinst
 ```
 
 Run the installer:
 
 ```bash
-bash ./debian-postinst.sh
+bash debian-postinst.sh
 ```
 
 ## Customization
