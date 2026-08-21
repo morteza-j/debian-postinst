@@ -28,6 +28,8 @@ This project automates the initial configuration of a fresh Debian installation 
 ## Project Structure
 
 ```text
+.
+├── debian-postinst.sh
 ├── environment
 │   ├── .bashrc
 │   ├── .pythonrc
