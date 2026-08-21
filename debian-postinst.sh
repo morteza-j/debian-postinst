@@ -349,8 +349,21 @@ validate_project_structure() {
         return 1
     fi
 
-    for branch in stable testing; do
-        for mirror in debian mobinhost shatel; do
+    for branch in stable; do
+        for mirror in official-debian iran-mobinhost iran-shatel iran-liara china-ustc china-tsinghua russia-yandex; do
+
+            local file_path="$repo_dir/$branch/$mirror.sources"
+
+            if [[ ! -f "$file_path" ]]; then
+                error "Missing repository file: $file_path"
+                return 1
+            fi
+
+        done
+    done
+
+    for branch in testing; do
+        for mirror in official-debian iran-mobinhost iran-shatel china-ustc china-tsinghua russia-yandex; do
 
             local file_path="$repo_dir/$branch/$mirror.sources"
 
@@ -427,22 +440,22 @@ update_system() {
     info "Cleaning APT cache..."
     apt clean
 
-    info "Updating package lists..."
-    apt --fix-missing update 1>/dev/null 2>&1
+#    info "Updating package lists..."
+#    apt --fix-missing update 1>/dev/null 2>&1
 
-    info "Performing full upgrade..."
-    apt -y full-upgrade 1>/dev/null 2>&1
+#    info "Performing full upgrade..."
+#    apt -y full-upgrade 1>/dev/null 2>&1
 
-    info "Fixing broken packages..."
-    apt -f install -y 1>/dev/null 2>&1
+#   info "Fixing broken packages..."
+#   apt -f install -y 1>/dev/null 2>&1
 
-    info "Removing unused packages..."
-    apt -y autoremove 1>/dev/null 2>&1
+#   info "Removing unused packages..."
+#   apt -y autoremove 1>/dev/null 2>&1
 
-    info "Refreshing package lists..."
-    apt --fix-missing update 1>/dev/null 2>&1
+#   info "Refreshing package lists..."
+#   apt --fix-missing update 1>/dev/null 2>&1
 
-    success "System update completed."
+    success "You Just need to run: apt update"
     log "INFO" "System updated successfully."
 }
 
@@ -695,25 +708,44 @@ run_wizard() {
             echo
             question "Repository source:"
             echo "      [1] Debian Official"
-            echo "      [2] Mobinhost Mirror"
-            echo "      [3] Shatel Mirror"
+            echo "      [2] Iran-mobinhost Mirror"
+            echo "      [3] Iran-shatel Mirror"
+            echo "      [4] Iran-liara Mirror"
+            echo "      [5] China-ustc Mirror"
+            echo "      [6] China-tsinghua Mirror"
+            echo "      [7] Russia-yandex Mirror"
         
             read -rp "          Select option: " MIRROR_CHOICE
 
             case "$MIRROR_CHOICE" in
                 1)
-                    MIRROR="debian"
+                    MIRROR="official-debian"
                     break
                     ;;
                 2)
-                    MIRROR="mobinhost"
+                    MIRROR="iran-mobinhost"
                     break
                     ;;
                 3)
-                    MIRROR="shatel"
+                    MIRROR="iran-shatel"
                     break
                     ;;
-
+                4)
+                    MIRROR="iran-liara"
+                    break
+                    ;;
+                5)
+                    MIRROR="china-ustc"
+                    break
+                    ;;
+                6)
+                    MIRROR="china-tsinghua"
+                    break
+                    ;;
+                7)
+                    MIRROR="russia-yandex"
+                    break
+                    ;;
                 *)
                     error "Invalid mirror!"
                     ;;

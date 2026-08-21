@@ -1,0 +1,6 @@
+# Modernized from /etc/apt/sources.list
+Types: deb deb-src
+URIs: https://mirrors.tuna.tsinghua.edu.cn/debian
+Suites: testing
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg

@@ -1,0 +1,12 @@
+# Modernized from /etc/apt/sources.list
+Types: deb deb-src
+URIs: http://linux-mirror.liara.ir/repository/debian
+Suites: stable stable-updates stable-backports
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Types: deb deb-src
+URIs: http://linux-mirror.liara.ir/repository/debian-security
+Suites: stable-security
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
