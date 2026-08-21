@@ -464,7 +464,8 @@ update_system() {
 # ----------------------------------------------------------
 
 install_essential_packages() {
-
+    info "Updating package lists..."
+    apt --fix-missing update 1>/dev/null 2>&1
     info "Installing essential packages..."
 
     local packages=(
