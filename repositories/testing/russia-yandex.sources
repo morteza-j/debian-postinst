@@ -1,4 +1,3 @@
-# Modernized from /etc/apt/sources.list
 Types: deb deb-src
 URIs: https://mirror.yandex.ru/debian
 Suites: testing
