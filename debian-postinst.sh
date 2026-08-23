@@ -455,7 +455,7 @@ update_system() {
 #   info "Refreshing package lists..."
 #   apt --fix-missing update 1>/dev/null 2>&1
 
-    success "You Just need to run: apt update"
+    success "You just need to run: apt update"
     log "INFO" "System updated successfully."
 }
 
