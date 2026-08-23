@@ -31,7 +31,7 @@ question() { echo -e " ${BLUE}[?]${NC} $1"; }
 # Files
 # ----------------------------------------------------------
 
-LOG_FILE="/var/log/debian-setup.log"
+LOG_FILE="/var/log/debian-postinst.log"
 DISTRO_FILE="/etc/os-release"
 
 # ----------------------------------------------------------
@@ -41,7 +41,7 @@ DISTRO_FILE="/etc/os-release"
 BACKUP_MODE=false
 RESTORE_MODE=false
 BACKUP_TARGETS=()
-BACKUP_ROOT="/var/backups/debian-setup"
+BACKUP_ROOT="/var/backups/debian-postinst"
 BACKUP_TS="$(date +%Y-%m-%d_%H:%M:%S)"
 
 # ----------------------------------------------------------
@@ -280,15 +280,15 @@ run_restore() {
 # ----------------------------------------------------------
 # Root Check
 # ----------------------------------------------------------
-
 check_root() {
 
     if [[ $EUID -ne 0 ]]; then
         error "This script must be run as root or using sudo command!"
-        log "INFO" "Script is not running as root. Attempting sudo."
-        exec sudo "$0" "$@"
+        if [[ -w $LOG_FILE ]]; then
+            log "ERROR" "Script executed without root privileges."
+        fi
+        exit 1
     fi
-
     success "Root privileges confirmed."
     log "INFO" "Root check passed."
 }
