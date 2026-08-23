@@ -284,9 +284,9 @@ run_restore() {
 check_root() {
 
     if [[ $EUID -ne 0 ]]; then
-        error "This script must be run as root."
-        log "ERROR" "Script executed without root privileges."
-        exit 1
+        error "This script must be run as root or using sudo command!"
+        log "INFO" "Script is not running as root. Attempting sudo."
+        exec sudo "$0" "$@"
     fi
 
     success "Root privileges confirmed."
