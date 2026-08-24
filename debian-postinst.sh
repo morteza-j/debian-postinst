@@ -350,7 +350,7 @@ validate_project_structure() {
     fi
 
     for branch in stable; do
-        for mirror in official-debian iran-mobinhost iran-shatel iran-liara china-ustc china-tsinghua russia-yandex; do
+        for mirror in official-debian iran-mobinhost iran-shatel iran-liara china-ustc china-tsinghua russia-yandex turkey-ulakbim; do
 
             local file_path="$repo_dir/$branch/$mirror.sources"
 
@@ -363,7 +363,7 @@ validate_project_structure() {
     done
 
     for branch in testing; do
-        for mirror in official-debian iran-mobinhost iran-shatel china-ustc china-tsinghua russia-yandex; do
+        for mirror in official-debian iran-mobinhost iran-shatel china-ustc china-tsinghua russia-yandex turkey-ulakbim; do
 
             local file_path="$repo_dir/$branch/$mirror.sources"
 
@@ -715,6 +715,7 @@ run_wizard() {
             echo "      [5] China-ustc Mirror"
             echo "      [6] China-tsinghua Mirror"
             echo "      [7] Russia-yandex Mirror"
+            echo "      [8] Turkey-ulakbim Mirror"
         
             read -rp "          Select option: " MIRROR_CHOICE
 
@@ -745,6 +746,10 @@ run_wizard() {
                     ;;
                 7)
                     MIRROR="russia-yandex"
+                    break
+                    ;;
+                8)
+                    MIRROR="turkey-ulakbim"
                     break
                     ;;
                 *)

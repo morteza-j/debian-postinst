@@ -1,0 +1,11 @@
+Types: deb deb-src
+URIs: https://ftp.linux.org.tr/debian
+Suites: stable stable-updates stable-backports
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Types: deb deb-src
+URIs: https://ftp.linux.org.tr/debian-security
+Suites: stable-security
+Components: main
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
