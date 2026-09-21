@@ -28,13 +28,11 @@ This project automates the initial configuration of a fresh Debian installation 
 ## Project Structure
 
 ```text
-.
+debian-postinst/
 ├── debian-postinst.sh
 ├── environment
-│   ├── .bashrc
-│   ├── .pythonrc
-│   ├── .tmux.conf
-│   └── .vimrc
+├── LICENSE
+├── README.md
 └── repositories
     ├── stable
     │   ├── china-tsinghua.sources
@@ -43,14 +41,18 @@ This project automates the initial configuration of a fresh Debian installation 
     │   ├── iran-mobinhost.sources
     │   ├── iran-shatel.sources
     │   ├── official-debian.sources
-    │   └── russia-yandex.sources
+    │   ├── russia-yandex.sources
+    │   └── turkey-ulakbim.sources
     └── testing
         ├── china-tsinghua.sources
         ├── china-ustc.sources
         ├── iran-mobinhost.sources
         ├── iran-shatel.sources
         ├── official-debian.sources
-        └── russia-yandex.sources
+        ├── russia-yandex.sources
+        └── turkey-ulakbim.sources
+
+5 directories, 18 files
 ```
 
 ## Requirements
