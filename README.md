@@ -61,7 +61,7 @@ debian-postinst/
 
 ## Requirements
 
-* Debian 12 (Bookworm) or newer
+* Debian 12(Bookworm) or Debian 13(Trixie)
 * Root privileges 
 * Internet connection
 
