@@ -31,6 +31,10 @@ This project automates the initial configuration of a fresh Debian installation 
 debian-postinst/
 ├── debian-postinst.sh
 ├── environment
+│   ├── .bashrc
+│   ├── .pythonrc
+│   ├── .tmux.conf
+│   └── .vimrc
 ├── LICENSE
 ├── README.md
 └── repositories
@@ -52,7 +56,7 @@ debian-postinst/
         ├── russia-yandex.sources
         └── turkey-ulakbim.sources
 
-5 directories, 18 files
+5 directories, 22 files
 ```
 
 ## Requirements
