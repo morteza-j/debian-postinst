@@ -402,6 +402,9 @@ validate_project_structure() {
     local script_dir
     local env_dir
     local repo_dir
+    local branch
+    local mirror
+    local file_path
 
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -413,9 +416,9 @@ validate_project_structure() {
         return 1
     fi
 
-    for f in .bashrc .vimrc .pythonrc .tmux.conf; do
-        if [[ ! -f "$env_dir/$f" ]]; then
-            error "Missing environment file: $env_dir/$f"
+    for file in .bashrc .vimrc .pythonrc .tmux.conf; do
+        if [[ ! -f "$env_dir/$file" ]]; then
+            error "Missing environment file: $env_dir/$file"
             return 1
         fi
     done
@@ -425,30 +428,57 @@ validate_project_structure() {
         return 1
     fi
 
-    for branch in stable; do
-        for mirror in official-debian iran-mobinhost iran-shatel iran-liara china-ustc china-tsinghua russia-yandex turkey-ulakbim; do
+    local -a stable_mirrors=(
+        official-debian
+        iran-mobinhost
+        iran-shatel
+        iran-liara
+        china-ustc
+        china-tsinghua
+        russia-yandex
+        turkey-ulakbim
+    )
 
-            local file_path="$repo_dir/$branch/$mirror.sources"
+    local -a testing_mirrors=(
+        official-debian
+        iran-mobinhost
+        iran-shatel
+        china-ustc
+        china-tsinghua
+        russia-yandex
+        turkey-ulakbim
+    )
 
-            if [[ ! -f "$file_path" ]]; then
-                error "Missing repository file: $file_path"
-                return 1
-            fi
+    for branch in stable testing; do
 
-        done
-    done
+        case "$branch" in
+            stable)
+                for mirror in "${stable_mirrors[@]}"; do
 
-    for branch in testing; do
-        for mirror in official-debian iran-mobinhost iran-shatel china-ustc china-tsinghua russia-yandex turkey-ulakbim; do
+                    file_path="$repo_dir/$branch/$mirror.sources"
 
-            local file_path="$repo_dir/$branch/$mirror.sources"
+                    if [[ ! -f "$file_path" ]]; then
+                        error "Missing repository file: $file_path"
+                        return 1
+                    fi
 
-            if [[ ! -f "$file_path" ]]; then
-                error "Missing repository file: $file_path"
-                return 1
-            fi
+                done
+                ;;
 
-        done
+            testing)
+                for mirror in "${testing_mirrors[@]}"; do
+
+                    file_path="$repo_dir/$branch/$mirror.sources"
+
+                    if [[ ! -f "$file_path" ]]; then
+                        error "Missing repository file: $file_path"
+                        return 1
+                    fi
+
+                done
+                ;;
+        esac
+
     done
 
     success "Project structure validation passed."
