@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+# -----------------------------------------------------------------------------
+# Debian post-install script
+#
+# A small Bash utility to make your essentials packages install
+# on your Debian GNU/Linux machine!
+#
+# Auther: J.Morteza
+# Created: 2026-07-29
+# License: GNU GPLv3
+# -----------------------------------------------------------------------------
+
 # ==========================================================
 # Debian Setup Script
 # ==========================================================
@@ -7,6 +18,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o errtrace
 
 # ----------------------------------------------------------
 # Colors
@@ -34,6 +46,9 @@ question() { echo -e " ${BLUE}[?]${NC} $1"; }
 LOG_FILE="/var/log/debian-postinst.log"
 DISTRO_FILE="/etc/os-release"
 
+LOGGING_ACTIVE=false
+CURRENT_TASK=""
+
 # ----------------------------------------------------------
 # Backup system
 # ----------------------------------------------------------
@@ -48,14 +63,76 @@ BACKUP_TS="$(date +%Y-%m-%d_%H:%M:%S)"
 # Logging
 # ----------------------------------------------------------
 
+start_logging() {
+    local log_dir
+
+    log_dir="$(dirname "$LOG_FILE")"
+
+    mkdir -p "$log_dir"
+    touch "$LOG_FILE"
+
+    exec > >(tee -a "$LOG_FILE") 2>&1
+
+    LOGGING_ACTIVE=true
+
+    printf '\n'
+    printf '=====================================================================\n'
+    printf ' Debian post-install script\n'
+    printf ' Started : %s\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+    printf ' Script  : %s\n' "$0"
+    printf ' Log     : %s\n' "$LOG_FILE"
+    printf '=====================================================================\n'
+}
+
 log() {
     local level="$1"
     local message="$2"
 
-    printf '[%s] [%s] %s\n' \
-        "$(date '+%Y-%m-%d %H:%M:%S')" \
-        "$level" \
-        "$message" >> "$LOG_FILE"
+    if [[ "$LOGGING_ACTIVE" == true ]]; then
+        printf '[%s] [%s] %s\n' \
+            "$(date '+%Y-%m-%d %H:%M:%S')" \
+            "$level" \
+            "$message" >> "$LOG_FILE"
+    fi
+}
+
+handle_error() {
+    local status="$?"
+    local failed_command="${BASH_COMMAND:-unknown command}"
+    local line="${BASH_LINENO[0]:-unknown}"
+
+    if [[ "$LOGGING_ACTIVE" == true ]]; then
+        log "ERROR" "Command failed with exit status $status at line $line: $failed_command"
+        if [[ -n "$CURRENT_TASK" ]]; then
+            log "ERROR" "Current task when the error occurred: $CURRENT_TASK"
+        fi
+    fi
+
+    echo
+    error "An error occurred and the script cannot continue."
+    error "Failed command: $failed_command"
+    error "Exit status: $status"
+    error "Line: $line"
+
+    if [[ -n "$CURRENT_TASK" ]]; then
+        error "Current task: $CURRENT_TASK"
+    fi
+
+    error "Script execution is INCOMPLETE."
+    error "Any tasks after the failed task were NOT executed."
+
+    if [[ "$CURRENT_TASK" == "packages" ]]; then
+        error "Essential package installation failed or a package-installation step failed."
+        error "Therefore, the environment configuration step was NOT executed."
+    fi
+
+    error "Check the error output above and the full log: $LOG_FILE"
+
+    if [[ "$LOGGING_ACTIVE" == true ]]; then
+        log "ERROR" "Script execution stopped. Status: INCOMPLETE"
+    fi
+
+    exit "$status"
 }
 
 # ----------------------------------------------------------
@@ -290,7 +367,6 @@ check_root() {
         exit 1
     fi
     success "Root privileges confirmed."
-    log "INFO" "Root check passed."
 }
 
 # ----------------------------------------------------------
@@ -465,24 +541,60 @@ update_system() {
 
 install_essential_packages() {
     info "Updating package lists..."
-    apt --fix-missing update 1>/dev/null 2>&1
+    log "INFO" "Updating APT package lists before essential package installation."
+
+    local apt_update_status
+
+    if apt --fix-missing update; then
+        log "INFO" "APT package lists updated successfully."
+    else
+        apt_update_status=$?
+        error "APT package list update failed."
+        error "Essential packages were NOT installed."
+        error "The environment configuration step will NOT be executed."
+        error "Script execution is INCOMPLETE."
+        error "APT exited with status: $apt_update_status"
+        error "Check the APT error output above and the full log: $LOG_FILE"
+
+        log "ERROR" "APT package list update failed with exit status $apt_update_status."
+        log "ERROR" "Essential packages were not installed; environment configuration was not executed."
+        log "ERROR" "Script execution stopped. Status: INCOMPLETE"
+
+        return "$apt_update_status"
+    fi
+
     info "Installing essential packages..."
 
     local packages=(
-        apt-offline conntrack python3 python3-pip age parted psmisc lsof file man man-db apt-utils vim tree less curl wget gnupg gpg ca-certificates lsb-release apt-transport-https git zip unzip bash-completion util-linux grub-common bsdextrautils mokutil htop btop iotop mtr iftop sysstat procps iproute2 bind9-dnsutils traceroute tcpdump iputils-ping systemd-resolved iptables firewalld smartmontools net-tools ncat gnupg2 tmux auditd unrar-free sudo rsync debsecan shim-signed grub-efi-amd64-signed sbsigntool
+        apt-offline conntrack python3-pip age parted psmisc lsof file man man-db apt-utils vim tree less curl wget gnupg gpg ca-certificates lsb-release apt-transport-https git zip unzip bash-completion util-linux grub-common bsdextrautils mokutil htop btop iotop mtr iftop sysstat procps iproute2 bind9-dnsutils traceroute tcpdump iputils-ping systemd-resolved iptables firewalld smartmontools net-tools ncat gnupg2 tmux auditd unrar-free sudo rsync debsecan shim-signed grub-efi-amd64-signed sbsigntool
     )
 
     log "INFO" "Installing packages: ${packages[*]}"
 
-    if apt install -y "${packages[@]}" 1>/dev/null 2>&1; then
-        systemctl disable --now firewalld.service 1>/dev/null 2>&1
-        success "Essential packages installed successfully."
-        log "INFO" "Essential packages installed successfully."
+    local apt_install_status
+
+    if apt install -y "${packages[@]}"; then
+        log "INFO" "APT install command completed successfully."
     else
+        apt_install_status=$?
         error "Failed to install essential packages."
-        log "ERROR" "Failed to install essential packages."
-        return 1
+        error "APT exited with status: $apt_install_status"
+        error "The environment configuration step will NOT be executed."
+        error "Script execution is INCOMPLETE."
+        error "Check the APT error output above and the full log: $LOG_FILE"
+
+        log "ERROR" "Essential package installation failed with exit status $apt_install_status."
+        log "ERROR" "Environment configuration was not executed because package installation failed."
+        log "ERROR" "Script execution stopped. Status: INCOMPLETE"
+
+        return "$apt_install_status"
     fi
+
+    info "Disabling firewalld service..."
+    systemctl disable --now firewalld.service 1>/dev/null 2>&1
+
+    success "Essential packages installed successfully."
+    log "INFO" "Essential packages installed successfully."
 }
 
 # ----------------------------------------------------------
@@ -559,7 +671,7 @@ select_user() {
 
         if [[ "$choice" =~ ^[0-9]+$ ]] &&
            (( choice >= 1 && choice <= ${#users[@]} )); then
-    
+
             REGULAR_USER="${users[$((choice-1))]}"
             break
         fi
@@ -716,7 +828,7 @@ run_wizard() {
             echo "      [6] China-tsinghua Mirror"
             echo "      [7] Russia-yandex Mirror"
             echo "      [8] Turkey-ulakbim Mirror"
-        
+
             read -rp "          Select option: " MIRROR_CHOICE
 
             case "$MIRROR_CHOICE" in
@@ -772,6 +884,9 @@ run_wizard() {
     echo
 
     for task in "${TASKS[@]}"; do
+        CURRENT_TASK="$task"
+        log "INFO" "Starting task: $task"
+
         case "$task" in
 
             repo)
@@ -782,12 +897,15 @@ run_wizard() {
             packages)
                 install_essential_packages
                 ;;
-    
+
             env)
                 configure_user_environment
                 ;;
-    
+
         esac
+
+        log "INFO" "Completed task: $task"
+        CURRENT_TASK=""
     done
 }
 
@@ -800,13 +918,20 @@ main() {
     parse_args "$@"
 
     check_root
+    start_logging
+    trap 'handle_error' ERR
+
+    log "INFO" "Script started."
+    log "INFO" "Arguments: $*"
+
     check_debian
 
     validate_project_structure || {
         error "Invalid project structure. Aborting."
+        log "ERROR" "Invalid project structure. Script aborted."
         exit 1
     }
-    
+
     # ----------------------------
     # RESTORE MODE
     # ----------------------------
@@ -847,7 +972,7 @@ main() {
         run_backup
         exit 0
     fi
-    
+
     run_wizard
     success "All tasks completed."
     log "INFO" "Script finished successfully."
