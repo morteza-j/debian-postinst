@@ -947,13 +947,13 @@ main() {
 
     parse_args "$@"
 
-    check_root
     start_logging
     trap 'handle_error' ERR
 
     log "INFO" "Script started."
     log "INFO" "Arguments: $*"
 
+    check_root
     check_debian
 
     validate_project_structure || {
